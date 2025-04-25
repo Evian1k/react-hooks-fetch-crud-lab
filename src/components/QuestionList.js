@@ -1,23 +1,16 @@
 import React from 'react';
+import QuestionItem from './QuestionItem';
 
 function QuestionList({ questions, onDeleteQuestion, onUpdateCorrectAnswer }) {
   return (
     <ul>
-      {questions.map(question => (
-        <li key={question.id}>
-          <p>{question.prompt}</p>
-          <select
-            value={question.correctIndex}
-            onChange={(e) => onUpdateCorrectAnswer(question.id, parseInt(e.target.value))}
-          >
-            {question.answers.map((answer, index) => (
-              <option key={index} value={index}>
-                {answer}
-              </option>
-            ))}
-          </select>
-          <button onClick={() => onDeleteQuestion(question.id)}>Delete</button>
-        </li>
+      {questions.map((question) => (
+        <QuestionItem
+          key={question.id}
+          question={question}
+          onDeleteQuestion={onDeleteQuestion}
+          onUpdateCorrectAnswer={onUpdateCorrectAnswer}
+        />
       ))}
     </ul>
   );

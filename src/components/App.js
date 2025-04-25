@@ -16,15 +16,11 @@ function App() {
   const handleAddQuestion = (newQuestion) => {
     fetch('http://localhost:4000/questions', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newQuestion),
     })
       .then(response => response.json())
-      .then(data => {
-        setQuestions([...questions, data]);
-      })
+      .then(data => setQuestions([...questions, data]))
       .catch(error => console.error('Error adding question:', error));
   };
 
@@ -32,9 +28,9 @@ function App() {
     fetch(`http://localhost:4000/questions/${id}`, {
       method: 'DELETE',
     })
-      .then(response => {
-        if (response.ok) {
-          setQuestions(questions.filter(question => question.id !== id));
+      .then((res) => {
+        if (res.ok) {
+          setQuestions(questions.filter(q => q.id !== id));
         }
       })
       .catch(error => console.error('Error deleting question:', error));
@@ -43,18 +39,14 @@ function App() {
   const handleUpdateCorrectAnswer = (id, newCorrectIndex) => {
     fetch(`http://localhost:4000/questions/${id}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ correctIndex: newCorrectIndex }),
     })
       .then(response => response.json())
-      .then(updatedQuestion => {
-        setQuestions(
-          questions.map(question =>
-            question.id === id ? { ...question, correctIndex: newCorrectIndex } : question
-          )
-        );
+      .then(() => {
+        setQuestions(questions.map(q =>
+          q.id === id ? { ...q, correctIndex: newCorrectIndex } : q
+        ));
       })
       .catch(error => console.error('Error updating question:', error));
   };
