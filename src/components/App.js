@@ -39,17 +39,22 @@ function App() {
   const handleUpdateCorrectAnswer = (id, newCorrectIndex) => {
     fetch(`http://localhost:4000/questions/${id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({ correctIndex: newCorrectIndex }),
     })
       .then(response => response.json())
       .then(() => {
-        setQuestions(questions.map(q =>
-          q.id === id ? { ...q, correctIndex: newCorrectIndex } : q
-        ));
+        setQuestions(prevQuestions =>
+          prevQuestions.map(q =>
+            q.id === id ? { ...q, correctIndex: newCorrectIndex } : q
+          )
+        );
       })
       .catch(error => console.error('Error updating question:', error));
   };
+  
 
   return (
     <div className="App">

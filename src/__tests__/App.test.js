@@ -8,7 +8,6 @@ import {
 } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
 import { server } from "../mocks/server";
-
 import App from "../components/App";
 
 beforeAll(() => server.listen());
@@ -20,20 +19,20 @@ test("displays question prompts after fetching", async () => {
 
   fireEvent.click(screen.queryByText(/View Questions/));
 
-  expect(await screen.findByText(/lorem testum 1/g)).toBeInTheDocument();
-  expect(await screen.findByText(/lorem testum 2/g)).toBeInTheDocument();
+  expect(await screen.findByText((content) => content.includes("lorem testum 1"))).toBeInTheDocument();
+  expect(await screen.findByText((content) => content.includes("lorem testum 2"))).toBeInTheDocument();
 });
 
 test("creates a new question when the form is submitted", async () => {
   render(<App />);
 
-  // wait for first render of list (otherwise we get a React state warning)
-  await screen.findByText(/lorem testum 1/g);
+  // Wait for first render of the list
+  await screen.findByText((content) => content.includes("lorem testum 1"));
 
-  // click form page
+  // Click the form page
   fireEvent.click(screen.queryByText("New Question"));
 
-  // fill out form
+  // Fill out the form
   fireEvent.change(screen.queryByLabelText(/Prompt/), {
     target: { value: "Test Prompt" },
   });
@@ -47,14 +46,14 @@ test("creates a new question when the form is submitted", async () => {
     target: { value: "1" },
   });
 
-  // submit form
-  fireEvent.submit(screen.queryByText(/Add Question/));
+  // Submit the form
+  fireEvent.submit(screen.queryByRole("form"));
 
-  // view questions
+  // View questions
   fireEvent.click(screen.queryByText(/View Questions/));
 
-  expect(await screen.findByText(/Test Prompt/g)).toBeInTheDocument();
-  expect(await screen.findByText(/lorem testum 1/g)).toBeInTheDocument();
+  expect(await screen.findByText((content) => content.includes("Test Prompt"))).toBeInTheDocument();
+  expect(await screen.findByText((content) => content.includes("lorem testum 1"))).toBeInTheDocument();
 });
 
 test("deletes the question when the delete button is clicked", async () => {
@@ -62,17 +61,17 @@ test("deletes the question when the delete button is clicked", async () => {
 
   fireEvent.click(screen.queryByText(/View Questions/));
 
-  await screen.findByText(/lorem testum 1/g);
+  await screen.findByText((content) => content.includes("lorem testum 1"));
 
   fireEvent.click(screen.queryAllByText("Delete Question")[0]);
 
-  await waitForElementToBeRemoved(() => screen.queryByText(/lorem testum 1/g));
+  await waitForElementToBeRemoved(() => screen.queryByText((content) => content.includes("lorem testum 1")));
 
   rerender(<App />);
 
-  await screen.findByText(/lorem testum 2/g);
+  await screen.findByText((content) => content.includes("lorem testum 2"));
 
-  expect(screen.queryByText(/lorem testum 1/g)).not.toBeInTheDocument();
+  expect(screen.queryByText((content) => content.includes("lorem testum 1"))).not.toBeInTheDocument();
 });
 
 test("updates the answer when the dropdown is changed", async () => {
@@ -80,7 +79,7 @@ test("updates the answer when the dropdown is changed", async () => {
 
   fireEvent.click(screen.queryByText(/View Questions/));
 
-  await screen.findByText(/lorem testum 2/g);
+  await screen.findByText((content) => content.includes("lorem testum 2"));
 
   fireEvent.change(screen.queryAllByLabelText(/Correct Answer/)[0], {
     target: { value: "3" },
