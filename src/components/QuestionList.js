@@ -1,7 +1,7 @@
 import React from 'react';
 import QuestionItem from './QuestionItem';
 
-function QuestionList({ questions, onDeleteQuestion, onUpdateCorrectAnswer }) {
+function QuestionList({ questions, onDeleteQuestion, onUpdateQuestion }) {
   return (
     <ul>
       {questions.map((question) => (
@@ -9,7 +9,7 @@ function QuestionList({ questions, onDeleteQuestion, onUpdateCorrectAnswer }) {
           key={question.id}
           question={question}
           onDeleteQuestion={onDeleteQuestion}
-          onUpdateCorrectAnswer={onUpdateCorrectAnswer}
+          onUpdateQuestion={onUpdateQuestion}
         />
       ))}
     </ul>

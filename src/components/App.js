@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import QuestionList from './QuestionList';
-import QuestionForm from './QuestionForm';
+import AdminNavBar from './AdminNavBar'; // Fixed path
+import QuestionForm from './QuestionForm'; // Fixed path
+import QuestionList from './QuestionList'; // Fixed path
 
 function App() {
+  const [page, setPage] = useState('List');
   const [questions, setQuestions] = useState([]);
-  const [showQuestions, setShowQuestions] = useState(false);
 
   useEffect(() => {
     fetch('http://localhost:4000/questions')
-      .then(response => response.json())
-      .then(data => setQuestions(data))
-      .catch(error => console.error('Error fetching questions:', error));
+      .then((res) => res.json())
+      .then((data) => setQuestions(data));
   }, []);
 
   const handleAddQuestion = (newQuestion) => {
@@ -19,60 +19,43 @@ function App() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newQuestion),
     })
-      .then(response => response.json())
-      .then(data => setQuestions([...questions, data]))
-      .catch(error => console.error('Error adding question:', error));
+      .then((res) => res.json())
+      .then((addedQuestion) => setQuestions([...questions, addedQuestion]));
   };
 
   const handleDeleteQuestion = (id) => {
-    fetch(`http://localhost:4000/questions/${id}`, {
-      method: 'DELETE',
-    })
-      .then((res) => {
-        if (res.ok) {
-          setQuestions(questions.filter(q => q.id !== id));
-        }
-      })
-      .catch(error => console.error('Error deleting question:', error));
+    fetch(`http://localhost:4000/questions/${id}`, { method: 'DELETE' })
+      .then(() => setQuestions(questions.filter((q) => q.id !== id)));
   };
 
-  const handleUpdateCorrectAnswer = (id, newCorrectIndex) => {
+  const handleUpdateQuestion = (id, correctIndex) => {
     fetch(`http://localhost:4000/questions/${id}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ correctIndex: newCorrectIndex }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ correctIndex }),
     })
-      .then(response => response.json())
-      .then(() => {
-        setQuestions(prevQuestions =>
-          prevQuestions.map(q =>
-            q.id === id ? { ...q, correctIndex: newCorrectIndex } : q
-          )
+      .then((res) => res.json())
+      .then((updatedQuestion) => {
+        setQuestions(
+          questions.map((q) => (q.id === id ? updatedQuestion : q))
         );
-      })
-      .catch(error => console.error('Error updating question:', error));
+      });
   };
-  
 
   return (
     <div className="App">
       <main>
-        <nav>
-          <button onClick={() => setShowQuestions(false)}>New Question</button>
-          <button onClick={() => setShowQuestions(true)}>View Questions</button>
-        </nav>
+        <AdminNavBar onChangePage={setPage} />
         <section>
           <h1>Quiz Questions</h1>
-          {showQuestions ? (
+          {page === 'Form' ? (
+            <QuestionForm onAddQuestion={handleAddQuestion} />
+          ) : (
             <QuestionList
               questions={questions}
               onDeleteQuestion={handleDeleteQuestion}
-              onUpdateCorrectAnswer={handleUpdateCorrectAnswer}
+              onUpdateQuestion={handleUpdateQuestion}
             />
-          ) : (
-            <QuestionForm onAddQuestion={handleAddQuestion} />
           )}
         </section>
       </main>
