@@ -1,16 +1,85 @@
-import React, { useState } from "react";
-import AdminNavBar from "./AdminNavBar";
-import QuestionForm from "./QuestionForm";
-import QuestionList from "./QuestionList";
+import React, { useState, useEffect } from 'react';
+import QuestionList from './QuestionList';
+import QuestionForm from './QuestionForm';
 
 function App() {
-  const [page, setPage] = useState("List");
+  const [questions, setQuestions] = useState([]);
+  const [showQuestions, setShowQuestions] = useState(false);
+
+  useEffect(() => {
+    fetch('http://localhost:4000/questions')
+      .then(response => response.json())
+      .then(data => setQuestions(data))
+      .catch(error => console.error('Error fetching questions:', error));
+  }, []);
+
+  const handleAddQuestion = (newQuestion) => {
+    fetch('http://localhost:4000/questions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newQuestion),
+    })
+      .then(response => response.json())
+      .then(data => {
+        setQuestions([...questions, data]);
+      })
+      .catch(error => console.error('Error adding question:', error));
+  };
+
+  const handleDeleteQuestion = (id) => {
+    fetch(`http://localhost:4000/questions/${id}`, {
+      method: 'DELETE',
+    })
+      .then(response => {
+        if (response.ok) {
+          setQuestions(questions.filter(question => question.id !== id));
+        }
+      })
+      .catch(error => console.error('Error deleting question:', error));
+  };
+
+  const handleUpdateCorrectAnswer = (id, newCorrectIndex) => {
+    fetch(`http://localhost:4000/questions/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ correctIndex: newCorrectIndex }),
+    })
+      .then(response => response.json())
+      .then(updatedQuestion => {
+        setQuestions(
+          questions.map(question =>
+            question.id === id ? { ...question, correctIndex: newCorrectIndex } : question
+          )
+        );
+      })
+      .catch(error => console.error('Error updating question:', error));
+  };
 
   return (
-    <main>
-      <AdminNavBar onChangePage={setPage} />
-      {page === "Form" ? <QuestionForm /> : <QuestionList />}
-    </main>
+    <div className="App">
+      <main>
+        <nav>
+          <button onClick={() => setShowQuestions(false)}>New Question</button>
+          <button onClick={() => setShowQuestions(true)}>View Questions</button>
+        </nav>
+        <section>
+          <h1>Quiz Questions</h1>
+          {showQuestions ? (
+            <QuestionList
+              questions={questions}
+              onDeleteQuestion={handleDeleteQuestion}
+              onUpdateCorrectAnswer={handleUpdateCorrectAnswer}
+            />
+          ) : (
+            <QuestionForm onAddQuestion={handleAddQuestion} />
+          )}
+        </section>
+      </main>
+    </div>
   );
 }
 
