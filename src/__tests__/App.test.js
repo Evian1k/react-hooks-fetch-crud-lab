@@ -7,15 +7,12 @@ import {
   waitForElementToBeRemoved,
 } from "@testing-library/react";
 import "@testing-library/jest-dom/extend-expect";
-import { server, resetQuestions } from "../mocks/server"; // Import resetQuestions
+import { server } from "../mocks/server";
 
 import App from "../components/App";
 
 beforeAll(() => server.listen());
-afterEach(() => {
-  server.resetHandlers();
-  resetQuestions(); // Reset the in-memory questions
-});
+afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
 test("displays question prompts after fetching", async () => {
@@ -23,18 +20,20 @@ test("displays question prompts after fetching", async () => {
 
   fireEvent.click(screen.queryByText(/View Questions/));
 
-  expect(await screen.findByText(/lorem testum 1/)).toBeInTheDocument();
-  expect(await screen.findByText(/lorem testum 2/)).toBeInTheDocument();
+  expect(await screen.findByText(/lorem testum 1/g)).toBeInTheDocument();
+  expect(await screen.findByText(/lorem testum 2/g)).toBeInTheDocument();
 });
 
 test("creates a new question when the form is submitted", async () => {
   render(<App />);
 
-  await screen.findByText(/lorem testum 1/);
+  // wait for first render of list (otherwise we get a React state warning)
+  await screen.findByText(/lorem testum 1/g);
 
+  // click form page
   fireEvent.click(screen.queryByText("New Question"));
 
-  // Fill out all required fields
+  // fill out form
   fireEvent.change(screen.queryByLabelText(/Prompt/), {
     target: { value: "Test Prompt" },
   });
@@ -44,22 +43,18 @@ test("creates a new question when the form is submitted", async () => {
   fireEvent.change(screen.queryByLabelText(/Answer 2/), {
     target: { value: "Test Answer 2" },
   });
-  fireEvent.change(screen.queryByLabelText(/Answer 3/), {
-    target: { value: "Test Answer 3" },
-  });
-  fireEvent.change(screen.queryByLabelText(/Answer 4/), {
-    target: { value: "Test Answer 4" },
-  });
   fireEvent.change(screen.queryByLabelText(/Correct Answer/), {
     target: { value: "1" },
   });
 
+  // submit form
   fireEvent.submit(screen.queryByText(/Add Question/));
 
+  // view questions
   fireEvent.click(screen.queryByText(/View Questions/));
 
-  expect(await screen.findByText(/Test Prompt/)).toBeInTheDocument();
-  expect(await screen.findByText(/lorem testum 1/)).toBeInTheDocument();
+  expect(await screen.findByText(/Test Prompt/g)).toBeInTheDocument();
+  expect(await screen.findByText(/lorem testum 1/g)).toBeInTheDocument();
 });
 
 test("deletes the question when the delete button is clicked", async () => {
@@ -67,17 +62,17 @@ test("deletes the question when the delete button is clicked", async () => {
 
   fireEvent.click(screen.queryByText(/View Questions/));
 
-  await screen.findByText(/lorem testum 1/);
+  await screen.findByText(/lorem testum 1/g);
 
   fireEvent.click(screen.queryAllByText("Delete Question")[0]);
 
-  await waitForElementToBeRemoved(() => screen.queryByText(/lorem testum 1/));
+  await waitForElementToBeRemoved(() => screen.queryByText(/lorem testum 1/g));
 
   rerender(<App />);
 
-  await screen.findByText(/lorem testum 2/);
+  await screen.findByText(/lorem testum 2/g);
 
-  expect(screen.queryByText(/lorem testum 1/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/lorem testum 1/g)).not.toBeInTheDocument();
 });
 
 test("updates the answer when the dropdown is changed", async () => {
@@ -85,19 +80,15 @@ test("updates the answer when the dropdown is changed", async () => {
 
   fireEvent.click(screen.queryByText(/View Questions/));
 
-  await screen.findByText(/lorem testum 2/);
+  await screen.findByText(/lorem testum 2/g);
 
-  // Target the dropdown for "lorem testum 2" (second question, index 1)
-  const dropdowns = screen.queryAllByLabelText(/Correct Answer/);
-  fireEvent.change(dropdowns[1], {
+  fireEvent.change(screen.queryAllByLabelText(/Correct Answer/)[0], {
     target: { value: "3" },
   });
 
-  expect(dropdowns[1].value).toBe("3");
+  expect(screen.queryAllByLabelText(/Correct Answer/)[0].value).toBe("3");
 
   rerender(<App />);
 
-  // Re-query the dropdowns after rerender
-  const updatedDropdowns = screen.queryAllByLabelText(/Correct Answer/);
-  expect(updatedDropdowns[1].value).toBe("3");
+  expect(screen.queryAllByLabelText(/Correct Answer/)[0].value).toBe("3");
 });
